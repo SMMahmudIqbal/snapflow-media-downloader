@@ -71,6 +71,7 @@ def extract_info(url: str) -> Dict[str, Any]:
         'ignoreerrors': False,
         'noplaylist': True,
         'nocheckcertificate': True,
+        'extractor_args': {'youtube': {'player_client': ['android', 'web']}},
     }
 
     with yt_dlp.YoutubeDL(ydl_opts) as ydl:
@@ -137,7 +138,7 @@ def extract_info(url: str) -> Dict[str, Any]:
                     "filesize_bytes": filesize,
                     "filesize_str": format_bytes(filesize),
                     "label": f"{resolution_key} ({'HD' if height >= 720 else 'SD'})",
-                    "direct_url": url_direct if has_audio and url_direct and not url_direct.startswith("manifest") else None
+                    "direct_url": url_direct if url_direct and not url_direct.startswith("manifest") else None
                 })
 
     # Sort video formats descending by resolution
@@ -168,6 +169,55 @@ def extract_info(url: str) -> Dict[str, Any]:
         "audio_formats": audio_formats,
         "author_credit": "Developed by S. M. Mahmud Iqbal"
     }
+
+
+def get_stream_url(url: str, format_id: str, is_audio: bool = False) -> Dict[str, Any]:
+    """Retrieve direct stream URL and title for redirect without heavy server downloads."""
+    ydl_opts = {
+        'quiet': True,
+        'no_warnings': True,
+        'skip_download': True,
+        'nocheckcertificate': True,
+        'noplaylist': True,
+        'extractor_args': {'youtube': {'player_client': ['android', 'web']}},
+    }
+    with yt_dlp.YoutubeDL(ydl_opts) as ydl:
+        info = ydl.extract_info(url, download=False)
+        if not info:
+            raise ValueError("Media info not found")
+
+        title = info.get("title", "media")
+        sanitized_title = re.sub(r'[^\w\s-]', '', title).strip() or "media"
+
+        formats = info.get("formats", [])
+        target_format = None
+        for f in formats:
+            if str(f.get("format_id")) == str(format_id):
+                target_format = f
+                break
+
+        if not target_format:
+            if is_audio:
+                for f in reversed(formats):
+                    if f.get("vcodec") == "none" and f.get("acodec") != "none" and f.get("url"):
+                        target_format = f
+                        break
+            else:
+                for f in reversed(formats):
+                    if f.get("height") and f.get("url"):
+                        target_format = f
+                        break
+
+        stream_url = target_format.get("url") if target_format else None
+        ext = (target_format.get("ext") if target_format else None) or ("mp3" if is_audio else "mp4")
+        filename = f"{sanitized_title}.{ext}"
+
+        return {
+            "stream_url": stream_url,
+            "filename": filename,
+            "title": title,
+            "ext": ext
+        }
 
 
 def download_media_file(url: str, format_id: str, is_audio: bool = False) -> str:

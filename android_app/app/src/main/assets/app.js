@@ -24,6 +24,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const modalOkBtn = document.getElementById("modalOkBtn");
   const tabToggles = document.querySelectorAll(".tab-toggle");
 
+  let currentMediaData = null;
   let downloadHistory = JSON.parse(localStorage.getItem("snapflow_history") || "[]");
 
   // Render initial history
@@ -38,7 +39,7 @@ document.addEventListener("DOMContentLoaded", () => {
         urlInput.focus();
       }
     } catch (e) {
-      showMessage("MANUAL INPUT REQUIRED: PLEASE PASTE URL DIRECTLY.", "info");
+      showMessage("MANUAL INPUT: PASTE URL DIRECTLY INTO FIELD.", "info");
     }
   });
 
@@ -46,7 +47,7 @@ document.addEventListener("DOMContentLoaded", () => {
   fetchBtn.addEventListener("click", () => {
     const url = urlInput.value.trim();
     if (!url) {
-      showMessage("ERROR: PLEASE SPECIFY A VALID RESOURCE URL.", "error");
+      showMessage("ERROR: SPECIFY A VALID RESOURCE URL.", "error");
       return;
     }
     extractMedia(url);
@@ -108,6 +109,7 @@ document.addEventListener("DOMContentLoaded", () => {
       }
 
       const data = await response.json();
+      currentMediaData = data;
       renderMedia(data);
     } catch (err) {
       showMessage(`EXTRACTION FAILED: ${err.message || 'COULD NOT PARSE STREAM'}`, "error");
@@ -139,7 +141,7 @@ document.addEventListener("DOMContentLoaded", () => {
               <div class="stream-spec-size">${f.filesize_str} // ${f.ext.toUpperCase()} STREAM</div>
             </div>
           </div>
-          <button class="stream-action-btn" data-fid="${f.format_id}" data-type="video" data-label="${f.resolution}">
+          <button class="stream-action-btn" data-fid="${f.format_id}" data-type="video" data-label="${f.resolution}" data-direct="${encodeURIComponent(f.direct_url || '')}">
             DOWNLOAD
           </button>
         `;
@@ -163,7 +165,7 @@ document.addEventListener("DOMContentLoaded", () => {
               <div class="stream-spec-size">${f.filesize_str} // ${f.quality} BITRATE</div>
             </div>
           </div>
-          <button class="stream-action-btn" data-fid="${f.format_id}" data-type="audio" data-label="Audio">
+          <button class="stream-action-btn" data-fid="${f.format_id}" data-type="audio" data-label="Audio" data-direct="${encodeURIComponent(f.direct_url || '')}">
             EXTRACT
           </button>
         `;
@@ -177,14 +179,15 @@ document.addEventListener("DOMContentLoaded", () => {
         const fid = btn.dataset.fid;
         const isAudio = btn.dataset.type === "audio";
         const label = btn.dataset.label;
-        startDownload(data.url, fid, isAudio, data.title, label);
+        const directUrl = decodeURIComponent(btn.dataset.direct || "");
+        startDownload(data.url, fid, isAudio, data.title, label, directUrl);
       });
     });
 
     resultCard.style.display = "flex";
   }
 
-  function startDownload(url, formatId, isAudio, title, label) {
+  function startDownload(url, formatId, isAudio, title, label, directUrl) {
     const downloadEndpoint = `/api/download?url=${encodeURIComponent(url)}&format_id=${encodeURIComponent(formatId)}&is_audio=${isAudio}`;
     
     // Add to history
@@ -193,22 +196,23 @@ document.addEventListener("DOMContentLoaded", () => {
       title: title || "MEDIA FILE",
       type: isAudio ? "MP3 AUDIO" : `VIDEO (${label})`,
       time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-      url: downloadEndpoint
+      url: directUrl || downloadEndpoint
     };
     downloadHistory.unshift(task);
     if (downloadHistory.length > 20) downloadHistory.pop();
     localStorage.setItem("snapflow_history", JSON.stringify(downloadHistory));
     renderHistory();
 
-    showMessage(`TRANSMISSION STARTED: [${label}] ${title}`, "info");
+    showMessage(`TRANSMISSION INITIALIZED: [${label}] ${title}`, "info");
     
-    // Trigger download
-    const link = document.createElement("a");
-    link.href = downloadEndpoint;
-    link.setAttribute("download", "");
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
+    // If direct stream URL is already known from metadata, download directly!
+    if (directUrl && !directUrl.startsWith("manifest")) {
+      window.open(directUrl, "_blank");
+      return;
+    }
+
+    // Otherwise navigate to /api/download which issues a 307 redirect to the stream
+    window.location.href = downloadEndpoint;
   }
 
   function renderHistory() {
@@ -226,7 +230,7 @@ document.addEventListener("DOMContentLoaded", () => {
           <div class="task-title" title="${item.title}">${item.title}</div>
           <div class="task-tag">${item.type} // LOGGED AT ${item.time}</div>
         </div>
-        <a href="${item.url}" class="task-redownload" download>SAVE</a>
+        <a href="${item.url}" class="task-redownload" target="_blank" rel="noopener noreferrer">SAVE</a>
       `;
       downloadsList.appendChild(row);
     });
