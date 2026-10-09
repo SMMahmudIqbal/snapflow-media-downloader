@@ -975,6 +975,22 @@ html, body {
    NAVIGATION MODE SWITCHER & PANELS
    Developed by S. M. Mahmud Iqbal
    ========================================================================== */
+.apk-badge {
+  background: var(--color-accent-red);
+  color: #FFFFFF !important;
+  text-decoration: none;
+  font-family: 'Clash Display', sans-serif;
+  font-weight: 700;
+  display: inline-flex;
+  align-items: center;
+}
+
+.apk-badge:hover {
+  background: var(--color-primary);
+  color: #FFFFFF !important;
+  transform: translate(-1px, -1px);
+}
+
 .mode-navigation-bar {
   display: flex;
   gap: 12px;
