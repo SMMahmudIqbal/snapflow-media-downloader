@@ -27,11 +27,15 @@ def format_bytes(size: Optional[int]) -> str:
     return f"{size:.1f} TB"
 
 
-def format_duration(seconds: Optional[int]) -> str:
+def format_duration(seconds: Optional[Any]) -> str:
     """Format seconds into MM:SS or HH:MM:SS."""
     if not seconds:
         return "Unknown"
-    mins, secs = divmod(seconds, 60)
+    try:
+        sec_int = int(float(seconds))
+    except (ValueError, TypeError):
+        return "Unknown"
+    mins, secs = divmod(sec_int, 60)
     hours, mins = divmod(mins, 60)
     if hours > 0:
         return f"{hours}:{mins:02d}:{secs:02d}"
@@ -71,7 +75,7 @@ def extract_info(url: str) -> Dict[str, Any]:
         'ignoreerrors': False,
         'noplaylist': True,
         'nocheckcertificate': True,
-        'extractor_args': {'youtube': {'player_client': ['android', 'web']}},
+        'extractor_args': {'youtube': {'player_client': ['visionos', 'android']}},
     }
 
     with yt_dlp.YoutubeDL(ydl_opts) as ydl:
@@ -146,15 +150,16 @@ def extract_info(url: str) -> Dict[str, Any]:
 
     # Standardized generic audio options if needed
     if not audio_formats:
+        fallback_direct = next((v.get("direct_url") for v in video_formats if v.get("has_audio") and v.get("direct_url")), None)
         audio_formats.append({
-            "format_id": "bestaudio",
-            "label": "High Quality Audio (MP3/M4A)",
-            "quality": "Best",
+            "format_id": "18" if fallback_direct else "bestaudio",
+            "label": "Audio Stream (MP3/M4A)",
+            "quality": "Direct Stream",
             "ext": "mp3",
             "filesize_bytes": None,
             "filesize_str": "Auto",
             "is_audio_only": True,
-            "direct_url": None
+            "direct_url": fallback_direct
         })
 
     return {
@@ -179,7 +184,7 @@ def get_stream_url(url: str, format_id: str, is_audio: bool = False) -> Dict[str
         'skip_download': True,
         'nocheckcertificate': True,
         'noplaylist': True,
-        'extractor_args': {'youtube': {'player_client': ['android', 'web']}},
+        'extractor_args': {'youtube': {'player_client': ['visionos', 'android']}},
     }
     with yt_dlp.YoutubeDL(ydl_opts) as ydl:
         info = ydl.extract_info(url, download=False)

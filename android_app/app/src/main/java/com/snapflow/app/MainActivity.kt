@@ -11,7 +11,7 @@ import android.net.Uri
 import android.os.Bundle
 import android.os.Environment
 import android.webkit.CookieManager
-import android.webkit.URLUtil
+import android.webkit.JavascriptInterface
 import android.webkit.WebChromeClient
 import android.webkit.WebSettings
 import android.webkit.WebView
@@ -44,6 +44,8 @@ class MainActivity : Activity() {
         settings.useWideViewPort = true
         settings.loadWithOverviewMode = true
 
+        webView.addJavascriptInterface(AndroidBridge(this), "AndroidBridge")
+
         webView.webViewClient = object : WebViewClient() {
             override fun shouldOverrideUrlLoading(view: WebView?, url: String?): Boolean {
                 return false
@@ -52,26 +54,48 @@ class MainActivity : Activity() {
 
         webView.webChromeClient = WebChromeClient()
 
-        // Handle native downloads directly to Android Downloads directory
         webView.setDownloadListener { url, userAgent, contentDisposition, mimetype, _ ->
-            try {
-                val request = DownloadManager.Request(Uri.parse(url))
-                val filename = URLUtil.guessFileName(url, contentDisposition, mimetype)
-                request.setMimeType(mimetype)
-                val cookies = CookieManager.getInstance().getCookie(url)
-                request.addRequestHeader("cookie", cookies)
-                request.addRequestHeader("User-Agent", userAgent)
-                request.setDescription("SnapFlow - Developed by S. M. Mahmud Iqbal")
-                request.setTitle(filename)
-                request.setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED)
-                request.setDestinationInExternalPublicDir(Environment.DIRECTORY_DOWNLOADS, filename)
+            startNativeDownload(url, null, mimetype)
+        }
+    }
 
-                val dm = getSystemService(Context.DOWNLOAD_SERVICE) as DownloadManager
-                dm.enqueue(request)
+    fun startNativeDownload(url: String, customTitle: String?, mimetype: String? = null) {
+        try {
+            val ext = if (url.contains(".mp3") || (mimetype != null && mimetype.contains("audio"))) ".mp3" else ".mp4"
+            val cleanTitle = (customTitle ?: "SnapFlow_Media").replace(Regex("[^a-zA-Z0-9_-]"), "_")
+            val filename = if (cleanTitle.endsWith(".mp4") || cleanTitle.endsWith(".mp3")) cleanTitle else "$cleanTitle$ext"
+
+            val request = DownloadManager.Request(Uri.parse(url))
+            if (mimetype != null) {
+                request.setMimeType(mimetype)
+            }
+            val cookies = CookieManager.getInstance().getCookie(url)
+            if (cookies != null) {
+                request.addRequestHeader("cookie", cookies)
+            }
+            request.addRequestHeader("User-Agent", "Mozilla/5.0 (Linux; Android 10) AppleWebKit/537.36")
+            request.setDescription("SnapFlow - Developed by S. M. Mahmud Iqbal")
+            request.setTitle(filename)
+            request.setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED)
+            request.setDestinationInExternalPublicDir(Environment.DIRECTORY_DOWNLOADS, filename)
+
+            val dm = getSystemService(Context.DOWNLOAD_SERVICE) as DownloadManager
+            dm.enqueue(request)
+            runOnUiThread {
                 Toast.makeText(this, "Downloading $filename to Downloads folder...", Toast.LENGTH_LONG).show()
-            } catch (e: Exception) {
+            }
+        } catch (e: Exception) {
+            runOnUiThread {
                 Toast.makeText(this, "Download error: ${e.message}", Toast.LENGTH_SHORT).show()
             }
+        }
+    }
+
+    inner class AndroidBridge(private val context: Context) {
+        @JavascriptInterface
+        fun downloadMedia(url: String, title: String, isAudio: Boolean) {
+            val mime = if (isAudio) "audio/mpeg" else "video/mp4"
+            startNativeDownload(url, title, mime)
         }
     }
 

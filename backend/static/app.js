@@ -91,13 +91,17 @@ document.addEventListener("DOMContentLoaded", () => {
     renderHistory();
   });
 
+  const API_BASE = (window.location.origin && window.location.origin.startsWith("http"))
+    ? ""
+    : "https://snapflow-media-downloader.vercel.app";
+
   async function extractMedia(url) {
     setLoading(true);
     hideMessage();
     resultCard.style.display = "none";
 
     try {
-      const response = await fetch("/api/extract", {
+      const response = await fetch(`${API_BASE}/api/extract`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ url })
@@ -112,7 +116,11 @@ document.addEventListener("DOMContentLoaded", () => {
       currentMediaData = data;
       renderMedia(data);
     } catch (err) {
-      showMessage(`EXTRACTION FAILED: ${err.message || 'COULD NOT PARSE STREAM'}`, "error");
+      let msg = err.message || 'COULD NOT PARSE STREAM';
+      if (msg.includes("confirm you're not a bot") || msg.includes("Sign in") || msg.includes("bot")) {
+        msg = "YOUTUBE DATACENTER CHALLENGE: Cloud server IPs are flagged by YouTube bot-guards. Use SnapFlow locally (http://localhost:8000) or install the Android APK (SnapFlow_v1.0.apk) for seamless extraction.";
+      }
+      showMessage(`EXTRACTION NOTICE: ${msg}`, "error");
     } finally {
       setLoading(false);
     }
@@ -188,15 +196,18 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   function startDownload(url, formatId, isAudio, title, label, directUrl) {
-    const downloadEndpoint = `/api/download?url=${encodeURIComponent(url)}&format_id=${encodeURIComponent(formatId)}&is_audio=${isAudio}`;
+    const downloadEndpoint = `${API_BASE}/api/download?url=${encodeURIComponent(url)}&format_id=${encodeURIComponent(formatId)}&is_audio=${isAudio}`;
     
+    // Determine target URL: prefer direct CDN stream URL if available
+    const targetUrl = (directUrl && !directUrl.startsWith("manifest")) ? directUrl : downloadEndpoint;
+
     // Add to history
     const task = {
       id: Date.now(),
       title: title || "MEDIA FILE",
       type: isAudio ? "MP3 AUDIO" : `VIDEO (${label})`,
       time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-      url: directUrl || downloadEndpoint
+      url: targetUrl
     };
     downloadHistory.unshift(task);
     if (downloadHistory.length > 20) downloadHistory.pop();
@@ -204,15 +215,25 @@ document.addEventListener("DOMContentLoaded", () => {
     renderHistory();
 
     showMessage(`TRANSMISSION INITIALIZED: [${label}] ${title}`, "info");
-    
-    // If direct stream URL is already known from metadata, download directly!
-    if (directUrl && !directUrl.startsWith("manifest")) {
-      window.open(directUrl, "_blank");
+
+    // 1. If running in Android App via Native AndroidBridge
+    if (window.AndroidBridge && typeof window.AndroidBridge.downloadMedia === "function") {
+      window.AndroidBridge.downloadMedia(targetUrl, title || "SnapFlow_Media", isAudio);
       return;
     }
 
-    // Otherwise navigate to /api/download which issues a 307 redirect to the stream
-    window.location.href = downloadEndpoint;
+    // 2. In web browser: trigger clean direct download / tab open
+    const link = document.createElement("a");
+    link.href = targetUrl;
+    link.target = "_blank";
+    link.rel = "noopener noreferrer";
+    const cleanTitle = (title || "SnapFlow_Media").replace(/[^a-zA-Z0-9_-]/g, "_");
+    link.download = `${cleanTitle}.${isAudio ? 'mp3' : 'mp4'}`;
+    document.body.appendChild(link);
+    link.click();
+    setTimeout(() => {
+      if (link.parentNode) link.parentNode.removeChild(link);
+    }, 1000);
   }
 
   function renderHistory() {
