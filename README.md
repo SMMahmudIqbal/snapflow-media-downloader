@@ -4,50 +4,58 @@
 > **Production Web App:** [snapflow-media-downloader.vercel.app](https://snapflow-media-downloader.vercel.app)  
 > **Latest Android APK Release:** [Download v1.0.0 APK (1.8 MB)](https://github.com/SMMahmudIqbal/snapflow-media-downloader/releases/download/v1.0.0/SnapFlow_v1.0.apk)
 
-SnapFlow is an open-source, ultra-fast, and modern media extraction & downloader application inspired by the raw typographic energy of **Swiss Brutalism** and modern open-source media utilities. Unlike bloated, ad-ridden alternatives (such as Snaptube or VidMate), SnapFlow is completely **clean, private, ad-free, and blazing fast**.
+[![Live Web App](https://img.shields.io/badge/Live%20Engine-snapflow--media--downloader.vercel.app-DB4A2B?style=flat-square)](https://snapflow-media-downloader.vercel.app)
+[![Android APK](https://img.shields.io/badge/Android%20APK-v1.0.0%20(1.8%20MB)-1E1E1E?style=flat-square&logo=android)](https://github.com/SMMahmudIqbal/snapflow-media-downloader/releases/download/v1.0.0/SnapFlow_v1.0.apk)
+[![Author](https://img.shields.io/badge/Developed%20By-S.%20M.%20Mahmud%20Iqbal-6366f1?style=flat-square)](https://github.com/SMMahmudIqbal)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg?style=flat-square)](LICENSE)
 
 ---
 
-## 🌟 What's New in the Latest Release
+## Overview
 
-1. **🔍 Integrated In-App Search Engine:**
-   - Search across YouTube and audio platforms directly by keyword — zero URL copy-pasting required.
+SnapFlow is an open-source, ultra-fast media extraction and downloader suite inspired by the raw typographic energy of **Swiss Brutalism** and modern open-source media utilities. Unlike bloated, ad-ridden alternatives, SnapFlow is completely clean, private, ad-free, and high performance.
+
+---
+
+## Key Capabilities
+
+1. **Integrated In-App Search Engine**:
+   - Direct keyword querying across media platforms with zero URL copy-pasting required.
    - Built-in trending query chips (*Lofi Beats*, *Synthwave*, *NCS Music*, *Tech*, *Podcasts*).
-   - High-contrast Swiss Brutalist cards featuring thumbnail previews, duration badges, channel info, view counts, and **`⚡ 1-CLICK EXTRACT`** action buttons.
+   - High-contrast Swiss Brutalist cards featuring thumbnail previews, duration badges, channel info, view counts, and 1-click extraction triggers.
 
-2. **📲 Android System "Share to SnapFlow" Integration:**
+2. **Android System "Share to SnapFlow" Integration**:
    - Registered `android.intent.action.SEND` intent filter.
-   - Tap "Share" on any video in YouTube, TikTok, Instagram, Twitter/X, or your web browser and pick **SnapFlow** — the app immediately launches and triggers stream extraction!
+   - Tap "Share" on any video in YouTube, TikTok, Instagram, Twitter/X, or your web browser and pick SnapFlow—the app immediately launches and triggers stream extraction.
 
-3. **🌐 In-App Web Explorer & Floating Stream Sniffer:**
+3. **In-App Web Explorer and Floating Stream Sniffer**:
    - Direct launchpad tiles for YouTube, TikTok, Instagram Reels, Twitter/X, SoundCloud, Facebook Watch, Reddit, and Twitch.
-   - On Android: Browse within the app with a persistent native bottom toolbar featuring **`[ ✕ EXIT ]`** and **`[ ⚡ EXTRACT MEDIA ]`** that sniffs the active page URL.
-   - Floating Brutalist Sniffer Button (`⚡ SNIFF MEDIA`) with automatic clipboard link detection.
+   - On Android: Browse within the app with a persistent native bottom toolbar featuring exit controls and stream sniffer triggers.
+   - Floating Brutalist Sniffer Button with automatic clipboard link detection.
 
-4. **⚡ Multi-Tier Fallback Extractor:**
+4. **Multi-Tier Fallback Extractor**:
    - Multi-client fallback (visionOS, Android, and web clients) ensuring resilient stream extraction even on cloud datacenter IPs.
    - Clear diagnostic notices for private, geo-locked, or removed media.
 
 ---
 
-## 🎨 Design System & Theme Specification
+## Design System: Swiss Brutalism
 
-- **Aesthetic:** Swiss Brutalist Poster Design
-- **Base Palette:**
+- **Aesthetic**: Swiss Brutalist Poster Design
+- **Palette**:
   - `Base (#E4E2DD)`: Warm tactile paper background
-  - `Primary Ink (#1E1E1E)`: High-contrast brutalist framing & typography
+  - `Primary Ink (#1E1E1E)`: High-contrast brutalist framing and typography
   - `Accent Red (#DB4A2B)`: Vivid action highlight
-  - `Warm Orange (#F8A348)` & `Soft Pink (#FF89A9)`: Atmospheric tones
-- **Typography:**
-  - **Headings:** `Clash Display` (700 weight, tight tracking `-0.05em`, leading `0.75-0.85`)
-  - **Body / Meta:** `Satoshi` (400–500 weight)
-- **Gradients & Atmospherics:** Ambient radial blur blobs (120px blur) with `mix-blend-mode: multiply` beneath typography.
-- **Animations:** Slide-up motion governed by `cubic-bezier(0.16, 1, 0.3, 1)` over 0.8s.
-- **Custom UI Elements:** 8px scrollbar (`#DB4A2B` thumb, `#E4E2DD` track) and `#DB4A2B` selection highlight.
+  - `Warm Orange (#F8A348)` and `Soft Pink (#FF89A9)`: Atmospheric tones
+- **Typography**:
+  - **Headings**: *Clash Display* (700 weight, tight tracking `-0.05em`)
+  - **Body / Meta**: *Satoshi* (400–500 weight)
+- **Gradients**: Ambient radial blur blobs (120px blur) beneath typography.
+- **Interactions**: Slide-up motion governed by `cubic-bezier(0.16, 1, 0.3, 1)` over 0.8s.
 
 ---
 
-## 📁 Repository Structure
+## Repository Structure
 
 ```text
 snapflow-media-downloader/
@@ -79,17 +87,17 @@ snapflow-media-downloader/
 
 ---
 
-## 🚀 Deployment & Installation
+## Deployment & Installation
 
 ### Android Installation
 1. Download **[SnapFlow_v1.0.apk](https://github.com/SMMahmudIqbal/snapflow-media-downloader/releases/download/v1.0.0/SnapFlow_v1.0.apk)** directly to your Android device.
 2. Tap to install (enable *Install from Unknown Sources* if prompted).
-3. Open SnapFlow or share any video link from YouTube/TikTok directly to SnapFlow!
+3. Open SnapFlow or share any video link from YouTube/TikTok directly to SnapFlow.
 
 ### Web Deployment
 The web version is deployed live at **[snapflow-media-downloader.vercel.app](https://snapflow-media-downloader.vercel.app)**.
 
-To deploy your own instance to Vercel:
+To deploy via Vercel:
 ```bash
 vercel --prod
 ```
@@ -107,6 +115,13 @@ python -m uvicorn backend.main:app --host 0.0.0.0 --port 8000 --reload
 
 ---
 
-## 👨‍💻 Author & Attribution
+## Author and Attribution
+
 **Developed by S. M. Mahmud Iqbal**  
-*All rights reserved.*
+- GitHub: [@SMMahmudIqbal](https://github.com/SMMahmudIqbal)
+
+---
+
+## License
+
+This project is licensed under the MIT License.
