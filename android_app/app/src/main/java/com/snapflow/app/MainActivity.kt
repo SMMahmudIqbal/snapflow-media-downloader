@@ -4,13 +4,16 @@
  */
 package com.snapflow.app
 
+import android.Manifest
 import android.app.Activity
 import android.app.DownloadManager
 import android.content.Context
 import android.content.Intent
+import android.content.pm.PackageManager
 import android.graphics.Color
 import android.graphics.Typeface
 import android.net.Uri
+import android.os.Build
 import android.os.Bundle
 import android.os.Environment
 import android.view.Gravity
@@ -19,6 +22,8 @@ import android.view.ViewGroup
 import android.webkit.CookieManager
 import android.webkit.JavascriptInterface
 import android.webkit.WebChromeClient
+import android.webkit.WebResourceError
+import android.webkit.WebResourceRequest
 import android.webkit.WebSettings
 import android.webkit.WebView
 import android.webkit.WebViewClient
@@ -26,6 +31,11 @@ import android.widget.Button
 import android.widget.FrameLayout
 import android.widget.LinearLayout
 import android.widget.Toast
+import java.io.BufferedReader
+import java.io.InputStreamReader
+import java.io.OutputStreamWriter
+import java.net.HttpURLConnection
+import java.net.URL
 
 class MainActivity : Activity() {
 
@@ -35,8 +45,13 @@ class MainActivity : Activity() {
     private var pendingSharedUrl: String? = null
     private var isExploring: Boolean = false
 
+    private val productionWebUrl = "https://snapflow-media-downloader.vercel.app"
+    private val localAssetUrl = "file:///android_asset/index.html"
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        checkAndRequestPermissions()
 
         rootLayout = FrameLayout(this).apply {
             layoutParams = ViewGroup.LayoutParams(
@@ -62,7 +77,28 @@ class MainActivity : Activity() {
         setupWebView()
         handleIntent(intent)
 
-        webView.loadUrl("file:///android_asset/index.html")
+        // Attempt live web application first; falls back to offline assets automatically on error
+        webView.loadUrl(productionWebUrl)
+    }
+
+    private fun checkAndRequestPermissions() {
+        val permissionsToRequest = mutableListOf<String>()
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            if (checkSelfPermission(Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
+                permissionsToRequest.add(Manifest.permission.POST_NOTIFICATIONS)
+            }
+        }
+
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.Q) {
+            if (checkSelfPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
+                permissionsToRequest.add(Manifest.permission.WRITE_EXTERNAL_STORAGE)
+            }
+        }
+
+        if (permissionsToRequest.isNotEmpty()) {
+            requestPermissions(permissionsToRequest.toTypedArray(), 101)
+        }
     }
 
     override fun onNewIntent(intent: Intent?) {
@@ -135,11 +171,11 @@ class MainActivity : Activity() {
             layoutParams = lp
             setOnClickListener {
                 val currentUrl = webView.url ?: ""
-                if (currentUrl.isNotEmpty() && !currentUrl.startsWith("file:")) {
+                if (currentUrl.isNotEmpty() && !currentUrl.startsWith("file:") && !currentUrl.contains("snapflow-media-downloader")) {
                     exitExplorerMode()
                     notifyWebViewSharedUrl(currentUrl)
                 } else {
-                    Toast.makeText(this@MainActivity, "No media page detected.", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(this@MainActivity, "No target media page detected.", Toast.LENGTH_SHORT).show()
                 }
             }
         }
@@ -161,7 +197,7 @@ class MainActivity : Activity() {
         runOnUiThread {
             isExploring = false
             explorerToolbar.visibility = View.GONE
-            webView.loadUrl("file:///android_asset/index.html")
+            webView.loadUrl(productionWebUrl)
         }
     }
 
@@ -172,10 +208,13 @@ class MainActivity : Activity() {
         settings.databaseEnabled = true
         settings.allowFileAccess = true
         settings.allowContentAccess = true
+        settings.allowFileAccessFromFileURLs = true
+        settings.allowUniversalAccessFromFileURLs = true
         settings.cacheMode = WebSettings.LOAD_DEFAULT
         settings.mixedContentMode = WebSettings.MIXED_CONTENT_ALWAYS_ALLOW
         settings.useWideViewPort = true
         settings.loadWithOverviewMode = true
+        settings.mediaPlaybackRequiresUserGesture = false
         settings.userAgentString = "Mozilla/5.0 (Linux; Android 13; Mobile) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Mobile Safari/537.36"
 
         webView.addJavascriptInterface(AndroidBridge(this), "AndroidBridge")
@@ -189,52 +228,90 @@ class MainActivity : Activity() {
                 return false
             }
 
+            override fun onReceivedError(
+                view: WebView?,
+                request: WebResourceRequest?,
+                error: WebResourceError?
+            ) {
+                super.onReceivedError(view, request, error)
+                // If live web failed (e.g. offline), automatically fallback to local offline asset
+                if (request?.isForMainFrame == true && !isExploring) {
+                    val currentLoadingUrl = request.url.toString()
+                    if (currentLoadingUrl.startsWith(productionWebUrl)) {
+                        view?.loadUrl(localAssetUrl)
+                    }
+                }
+            }
+
             override fun onPageFinished(view: WebView?, url: String?) {
                 super.onPageFinished(view, url)
-                if (url != null && url.startsWith("file:///android_asset/index.html")) {
-                    pendingSharedUrl?.let { shared ->
-                        notifyWebViewSharedUrl(shared)
-                        pendingSharedUrl = null
-                    }
+                pendingSharedUrl?.let { shared ->
+                    notifyWebViewSharedUrl(shared)
+                    pendingSharedUrl = null
                 }
             }
         }
 
         webView.webChromeClient = WebChromeClient()
 
-        webView.setDownloadListener { url, _, _, mimetype, _ ->
+        webView.setDownloadListener { url, userAgent, contentDisposition, mimetype, _ ->
             startNativeDownload(url, null, mimetype)
         }
     }
 
     fun startNativeDownload(url: String, customTitle: String?, mimetype: String? = null) {
         try {
-            val ext = if (url.contains(".mp3") || (mimetype != null && mimetype.contains("audio"))) ".mp3" else ".mp4"
-            val cleanTitle = (customTitle ?: "SnapFlow_Media").replace(Regex("[^a-zA-Z0-9_-]"), "_")
-            val filename = if (cleanTitle.endsWith(".mp4") || cleanTitle.endsWith(".mp3")) cleanTitle else "$cleanTitle$ext"
+            val resolvedUrl = if (url.startsWith("/")) "$productionWebUrl$url" else url
 
-            val request = DownloadManager.Request(Uri.parse(url))
-            if (mimetype != null) {
-                request.setMimeType(mimetype)
+            // If it's an external web helper URL, launch in browser directly
+            if (resolvedUrl.contains("ssyoutube.com") || resolvedUrl.contains("y2mate") || resolvedUrl.contains("savefrom")) {
+                val browserIntent = Intent(Intent.ACTION_VIEW, Uri.parse(resolvedUrl)).apply {
+                    flags = Intent.FLAG_ACTIVITY_NEW_TASK
+                }
+                startActivity(browserIntent)
+                Toast.makeText(this, "Opening media downloader in browser...", Toast.LENGTH_SHORT).show()
+                return
             }
-            val cookies = CookieManager.getInstance().getCookie(url)
-            if (cookies != null) {
-                request.addRequestHeader("cookie", cookies)
+
+            val ext = if (resolvedUrl.contains(".mp3") || (mimetype != null && mimetype.contains("audio"))) ".mp3" else ".mp4"
+            val cleanTitle = (customTitle ?: "SnapFlow_Media").replace(Regex("[^a-zA-Z0-9_-]"), "_").take(50)
+            val uniqueSuffix = (System.currentTimeMillis() % 100000).toString()
+            val filename = "${cleanTitle}_$uniqueSuffix$ext"
+
+            val request = DownloadManager.Request(Uri.parse(resolvedUrl)).apply {
+                if (mimetype != null) {
+                    setMimeType(mimetype)
+                }
+                val cookies = CookieManager.getInstance().getCookie(resolvedUrl)
+                if (cookies != null) {
+                    addRequestHeader("cookie", cookies)
+                }
+                addRequestHeader("User-Agent", "Mozilla/5.0 (Linux; Android 10) AppleWebKit/537.36")
+                setDescription("SnapFlow - Developed by S. M. Mahmud Iqbal")
+                setTitle(filename)
+                setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED)
+                setDestinationInExternalPublicDir(Environment.DIRECTORY_DOWNLOADS, filename)
             }
-            request.addRequestHeader("User-Agent", "Mozilla/5.0 (Linux; Android 10) AppleWebKit/537.36")
-            request.setDescription("SnapFlow - Developed by S. M. Mahmud Iqbal")
-            request.setTitle(filename)
-            request.setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED)
-            request.setDestinationInExternalPublicDir(Environment.DIRECTORY_DOWNLOADS, filename)
 
             val dm = getSystemService(Context.DOWNLOAD_SERVICE) as DownloadManager
             dm.enqueue(request)
             runOnUiThread {
-                Toast.makeText(this, "Downloading $filename to Downloads folder...", Toast.LENGTH_LONG).show()
+                Toast.makeText(this, "Downloading to Downloads: $filename", Toast.LENGTH_LONG).show()
             }
         } catch (e: Exception) {
-            runOnUiThread {
-                Toast.makeText(this, "Download error: ${e.message}", Toast.LENGTH_SHORT).show()
+            // Robust fallback: open stream in browser / external download manager
+            try {
+                val fallbackIntent = Intent(Intent.ACTION_VIEW, Uri.parse(url)).apply {
+                    flags = Intent.FLAG_ACTIVITY_NEW_TASK
+                }
+                startActivity(fallbackIntent)
+                runOnUiThread {
+                    Toast.makeText(this, "Opening stream in system downloader...", Toast.LENGTH_SHORT).show()
+                }
+            } catch (fallbackEx: Exception) {
+                runOnUiThread {
+                    Toast.makeText(this, "Download error: ${e.message}", Toast.LENGTH_LONG).show()
+                }
             }
         }
     }
@@ -256,6 +333,38 @@ class MainActivity : Activity() {
             val url = pendingSharedUrl ?: ""
             pendingSharedUrl = null
             return url
+        }
+
+        @JavascriptInterface
+        fun nativeFetch(targetUrl: String, method: String, postData: String?): String {
+            return try {
+                val resolvedUrl = if (targetUrl.startsWith("/")) "$productionWebUrl$targetUrl" else targetUrl
+                val url = URL(resolvedUrl)
+                val conn = (url.openConnection() as HttpURLConnection).apply {
+                    requestMethod = method.uppercase()
+                    connectTimeout = 12000
+                    readTimeout = 15000
+                    setRequestProperty("User-Agent", "Mozilla/5.0 (Linux; Android 13; Mobile) AppleWebKit/537.36 SnapFlow")
+                    setRequestProperty("Accept", "application/json")
+                    if (!postData.isNullOrEmpty()) {
+                        setRequestProperty("Content-Type", "application/json; charset=UTF-8")
+                        doOutput = true
+                        OutputStreamWriter(outputStream, "UTF-8").use { os ->
+                            os.write(postData)
+                            os.flush()
+                        }
+                    }
+                }
+
+                val responseCode = conn.responseCode
+                val stream = if (responseCode in 200..299) conn.inputStream else conn.errorStream
+                val responseText = BufferedReader(InputStreamReader(stream, "UTF-8")).use { reader ->
+                    reader.readText()
+                }
+                responseText
+            } catch (e: Exception) {
+                "{\"error\": \"${e.message}\"}"
+            }
         }
     }
 

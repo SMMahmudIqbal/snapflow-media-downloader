@@ -48,7 +48,7 @@ document.addEventListener("DOMContentLoaded", () => {
   let currentMediaData = null;
   let downloadHistory = JSON.parse(localStorage.getItem("snapflow_history") || "[]");
 
-  const API_BASE = (window.location.origin && window.location.origin.startsWith("http"))
+  const API_BASE = (window.location.origin && window.location.origin.startsWith("http") && !window.location.origin.includes("localhost:8000"))
     ? ""
     : "https://snapflow-media-downloader.vercel.app";
 
@@ -113,6 +113,45 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   // ==========================================
+  // BULLETPROOF API CALLER (WEB + ANDROID BRIDGE)
+  // ==========================================
+  async function apiCall(endpoint, method = "GET", body = null) {
+    const targetUrl = endpoint.startsWith("http") ? endpoint : `${API_BASE}${endpoint}`;
+
+    // 1. First Attempt: Standard Browser Fetch
+    try {
+      const options = {
+        method,
+        headers: { "Content-Type": "application/json" }
+      };
+      if (body) {
+        options.body = JSON.stringify(body);
+      }
+      const response = await fetch(targetUrl, options);
+      if (response.ok) {
+        return await response.json();
+      }
+      const errData = await response.json().catch(() => ({}));
+      throw new Error(errData.detail || `Server status ${response.status}`);
+    } catch (fetchErr) {
+      // 2. Second Attempt: Native AndroidBridge Fallback (Immune to CORS / File URL sandbox)
+      if (window.AndroidBridge && typeof window.AndroidBridge.nativeFetch === "function") {
+        try {
+          const raw = window.AndroidBridge.nativeFetch(targetUrl, method, body ? JSON.stringify(body) : null);
+          const parsed = JSON.parse(raw);
+          if (parsed && !parsed.error) {
+            return parsed;
+          }
+          throw new Error(parsed.error || "Native bridge request failed");
+        } catch (bridgeErr) {
+          throw new Error(bridgeErr.message || fetchErr.message);
+        }
+      }
+      throw fetchErr;
+    }
+  }
+
+  // ==========================================
   // IN-APP SEARCH ENGINE CONTROLLER
   // ==========================================
   async function performSearch(query) {
@@ -128,11 +167,7 @@ document.addEventListener("DOMContentLoaded", () => {
     if (searchResultsGrid) searchResultsGrid.innerHTML = '<div class="empty-notice">QUERYING GLOBAL MEDIA ARCHIVES...</div>';
 
     try {
-      const res = await fetch(`${API_BASE}/api/search?q=${encodeURIComponent(q)}`);
-      if (!res.ok) {
-        throw new Error(`Search error status ${res.status}`);
-      }
-      const data = await res.json();
+      const data = await apiCall(`/api/search?q=${encodeURIComponent(q)}`, "GET");
       renderSearchResults(data.results || [], q);
     } catch (err) {
       if (searchResultsGrid) {
@@ -232,11 +267,9 @@ document.addEventListener("DOMContentLoaded", () => {
   // ==========================================
   function launchExplorerUrl(url) {
     if (!url) return;
-    // Android native webview browser
     if (window.AndroidBridge && typeof window.AndroidBridge.openExplorer === "function") {
       window.AndroidBridge.openExplorer(url);
     } else {
-      // In web browser: open in separate tab
       window.open(url, "_blank", "noopener,noreferrer");
       showMessage("BROWSER LAUNCHED: Copy video link and tap 'SNIFF MEDIA' to download!", "info");
     }
@@ -273,7 +306,6 @@ document.addEventListener("DOMContentLoaded", () => {
         // Clipboard read permission not granted or unsupported
       }
 
-      // Prompt or switch
       const manual = prompt("Enter or paste video URL to sniff & extract:", urlInput.value || "");
       if (manual && manual.trim().startsWith("http")) {
         urlInput.value = manual.trim();
@@ -353,18 +385,7 @@ document.addEventListener("DOMContentLoaded", () => {
     resultCard.style.display = "none";
 
     try {
-      const response = await fetch(`${API_BASE}/api/extract`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ url })
-      });
-
-      if (!response.ok) {
-        const errData = await response.json().catch(() => ({}));
-        throw new Error(errData.detail || `Server error code ${response.status}`);
-      }
-
-      const data = await response.json();
+      const data = await apiCall("/api/extract", "POST", { url });
       currentMediaData = data;
       renderMedia(data);
     } catch (err) {

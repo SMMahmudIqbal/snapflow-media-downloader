@@ -2,10 +2,10 @@
 
 > **Developed by S. M. Mahmud Iqbal**  
 > **Production Web App:** [snapflow-media-downloader.vercel.app](https://snapflow-media-downloader.vercel.app)  
-> **Latest Android APK Release:** [Download v1.1.0 APK (1.8 MB)](https://github.com/SMMahmudIqbal/snapflow-media-downloader/releases/download/v1.1.0/SnapFlow_v1.1.0.apk)
+> **Latest Android APK Release:** [Download v1.2.0 APK (12.5 MB)](https://github.com/SMMahmudIqbal/snapflow-media-downloader/releases/download/v1.2.0/SnapFlow_v1.2.0.apk)
 
 [![Live Web App](https://img.shields.io/badge/Live%20Engine-snapflow--media--downloader.vercel.app-DB4A2B?style=flat-square)](https://snapflow-media-downloader.vercel.app)
-[![Android APK](https://img.shields.io/badge/Android%20APK-v1.1.0%20(1.8%20MB)-1E1E1E?style=flat-square&logo=android)](https://github.com/SMMahmudIqbal/snapflow-media-downloader/releases/download/v1.1.0/SnapFlow_v1.1.0.apk)
+[![Android APK](https://img.shields.io/badge/Android%20APK-v1.2.0%20(12.5%20MB)-1E1E1E?style=flat-square&logo=android)](https://github.com/SMMahmudIqbal/snapflow-media-downloader/releases/download/v1.2.0/SnapFlow_v1.2.0.apk)
 [![Author](https://img.shields.io/badge/Developed%20By-S.%20M.%20Mahmud%20Iqbal-6366f1?style=flat-square)](https://github.com/SMMahmudIqbal)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg?style=flat-square)](LICENSE)
 
@@ -90,7 +90,7 @@ snapflow-media-downloader/
 ## Deployment & Installation
 
 ### Android Installation
-1. Download **[SnapFlow_v1.1.0.apk](https://github.com/SMMahmudIqbal/snapflow-media-downloader/releases/download/v1.1.0/SnapFlow_v1.1.0.apk)** directly to your Android device.
+1. Download **[SnapFlow_v1.2.0.apk](https://github.com/SMMahmudIqbal/snapflow-media-downloader/releases/download/v1.2.0/SnapFlow_v1.2.0.apk)** directly to your Android device.
 2. Tap to install (enable *Install from Unknown Sources* if prompted).
 3. Open SnapFlow or share any video link from YouTube/TikTok directly to SnapFlow.
 
