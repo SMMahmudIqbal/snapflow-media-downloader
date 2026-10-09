@@ -116,11 +116,14 @@ document.addEventListener("DOMContentLoaded", () => {
       currentMediaData = data;
       renderMedia(data);
     } catch (err) {
-      let msg = err.message || 'COULD NOT PARSE STREAM';
-      if (msg.includes("confirm you're not a bot") || msg.includes("Sign in") || msg.includes("bot")) {
-        msg = "YOUTUBE DATACENTER CHALLENGE: Cloud server IPs are flagged by YouTube bot-guards. Use SnapFlow locally (http://localhost:8000) or install the Android APK (SnapFlow_v1.0.apk) for seamless extraction.";
+      let raw = err.message || 'COULD NOT PARSE STREAM';
+      let msg = raw;
+      if (raw.toLowerCase().includes("unavailable") || raw.toLowerCase().includes("not exist") || raw.toLowerCase().includes("removed") || raw.toLowerCase().includes("private") || raw.toLowerCase().includes("404")) {
+        msg = "MEDIA UNAVAILABLE: This video does not exist, has been removed, or is set to private. Please verify your URL.";
+      } else if (raw.toLowerCase().includes("confirm you're not a bot") || raw.toLowerCase().includes("sign in")) {
+        msg = "STREAM NOTICE: YouTube verification required for this channel. Try our Android APK or another video link.";
       }
-      showMessage(`EXTRACTION NOTICE: ${msg}`, "error");
+      showMessage(`NOTICE: ${msg}`, "error");
     } finally {
       setLoading(false);
     }
