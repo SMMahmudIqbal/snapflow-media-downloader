@@ -1,0 +1,27 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Virtual Environments
+.venv/
+env/
+venv/
+ENV/
+
+# Gradle & Android builds
+.gradle/
+build/
+android_app/build/
+android_app/app/build/
+android_app/.gradle/
+local.properties
+
+# Vercel
+.vercel/
+
+# OS / Editor
+.DS_Store
+.idea/
+*.iml
+.vscode/

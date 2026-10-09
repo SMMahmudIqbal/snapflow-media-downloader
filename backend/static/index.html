@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="author" content="S. M. Mahmud Iqbal">
+  <meta name="description" content="SnapFlow - Swiss Brutalist Media Engine. Developed by S. M. Mahmud Iqbal.">
+  <title>SNAPFLOW ✕ MEDIA ENGINE</title>
+
+  <!-- Fontshare Fonts: Clash Display & Satoshi -->
+  <link href="https://api.fontshare.com/v2/css?f[]=clash-display@500,600,700&f[]=satoshi@400,500,700,900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <!-- Ambient Radial Blobs for Swiss Poster Multiply Blending -->
+  <div class="blob-canvas">
+    <div class="blob blob-red"></div>
+    <div class="blob blob-orange"></div>
+    <div class="blob blob-pink"></div>
+  </div>
+
+  <div class="poster-container">
+    <!-- Brutalist Header Bar -->
+    <header class="poster-header">
+      <div class="brand-block">
+        <div class="brand-tag">ARCHIVE ED. // 2026</div>
+        <div class="brand-logo-row">
+          <span class="logo-symbol">✕</span>
+          <h1 class="brand-title">SNAPFLOW</h1>
+        </div>
+        <div class="brand-author-badge">DEVELOPED BY S. M. MAHMUD IQBAL</div>
+      </div>
+      <div class="header-actions">
+        <button class="brutalist-btn-subtle" id="aboutBtn">
+          <span>SPEC / INFO</span>
+          <span class="btn-indicator"></span>
+        </button>
+      </div>
+    </header>
+
+    <!-- Main Content Area -->
+    <main class="poster-main">
+      <!-- Hero Poster Headline -->
+      <section class="hero-section">
+        <div class="hero-meta-row">
+          <span class="badge-accent">MULTI-STREAM RAW CONVERTER</span>
+          <span class="badge-outline">NO ADS // ZERO TRACKING</span>
+        </div>
+        <h2 class="display-headline">EXTRACT.<br>DOWNLOAD.<br><span class="accent-text">ANY MEDIA.</span></h2>
+        <p class="lead-text">
+          High-velocity media parser supporting 1,000+ sources including YouTube, TikTok, Instagram Reels, X/Twitter, and Vimeo. Clean stream decoding.
+        </p>
+      </section>
+
+      <!-- Input Card -->
+      <section class="input-section">
+        <div class="brutalist-box input-box">
+          <div class="box-header-strip">
+            <span class="strip-label">TARGET RESOURCE URL</span>
+            <span class="strip-code">INPUT_01</span>
+          </div>
+          <div class="input-interactive-row">
+            <input type="text" id="urlInput" placeholder="PASTE HTTP(S) URL HERE..." autocomplete="off">
+            <button class="brutalist-btn action-paste" id="pasteBtn" type="button">PASTE</button>
+          </div>
+          <button class="brutalist-btn btn-primary" id="fetchBtn" type="button">
+            <span class="btn-text">INITIALIZE EXTRACTION</span>
+            <span class="spinner" style="display: none;"></span>
+          </button>
+        </div>
+
+        <!-- Supported Platform Marquee / Badges -->
+        <div class="tags-row">
+          <span class="tag-item">YOUTUBE</span>
+          <span class="tag-item">TIKTOK</span>
+          <span class="tag-item">INSTAGRAM</span>
+          <span class="tag-item">X // TWITTER</span>
+          <span class="tag-item">FACEBOOK</span>
+          <span class="tag-item">VIMEO</span>
+          <span class="tag-item">REDDIT</span>
+        </div>
+      </section>
+
+      <!-- Status Alert -->
+      <div id="statusMessage" class="status-box" style="display: none;"></div>
+
+      <!-- Result Card (Media Preview) -->
+      <section id="resultCard" class="brutalist-box result-card" style="display: none;">
+        <div class="box-header-strip">
+          <span class="strip-label">DECODED MANIFEST</span>
+          <span id="mediaPlatformBadge" class="strip-code">PLATFORM</span>
+        </div>
+
+        <div class="media-hero-grid">
+          <div class="thumb-frame">
+            <img id="mediaThumbnail" src="" alt="Thumbnail">
+            <div class="thumb-overlay">
+              <span id="mediaDuration" class="timecode-badge">00:00</span>
+            </div>
+          </div>
+          <div class="media-details">
+            <h3 id="mediaTitle" class="media-title">MEDIA TITLE</h3>
+            <div class="uploader-line">
+              <span class="line-label">SOURCE:</span>
+              <span id="mediaAuthor" class="author-name">CREATOR</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Mode Tabs -->
+        <div class="tab-switch-grid">
+          <button class="tab-toggle active" data-tab="video">
+            <span class="tab-index">01</span>
+            <span class="tab-label">VIDEO STREAMS</span>
+          </button>
+          <button class="tab-toggle" data-tab="audio">
+            <span class="tab-index">02</span>
+            <span class="tab-label">AUDIO EXTRACTION</span>
+          </button>
+        </div>
+
+        <!-- Video Format Grid -->
+        <div class="stream-catalog" id="videoFormats">
+          <!-- Populated by JS -->
+        </div>
+
+        <!-- Audio Format Grid -->
+        <div class="stream-catalog" id="audioFormats" style="display: none;">
+          <!-- Populated by JS -->
+        </div>
+      </section>
+
+      <!-- Downloads Log -->
+      <section class="brutalist-box history-box">
+        <div class="box-header-strip">
+          <span class="strip-label">EXECUTION LOG & CACHE</span>
+          <button id="clearHistoryBtn" class="clear-btn">PURGE LOG</button>
+        </div>
+        <div id="downloadsList" class="history-list">
+          <div class="empty-notice">AWAITING FIRST EXTRACTION TASK.</div>
+        </div>
+      </section>
+    </main>
+
+    <!-- Poster Footer with Required Attribution -->
+    <footer class="poster-footer">
+      <div class="footer-grid">
+        <div class="footer-brand">
+          <div class="footer-title">SNAPFLOW ENGINE</div>
+          <div class="footer-credit">Developed by <strong>S. M. Mahmud Iqbal</strong></div>
+        </div>
+        <div class="footer-specs">
+          <span>SWISS BRUTALIST SPECIFICATION</span>
+          <span>PALETTE: #E4E2DD // #1E1E1E // #DB4A2B</span>
+        </div>
+      </div>
+      <div class="footer-sub-bar">
+        <span>© 2026 SNAPFLOW • ALL RIGHTS RESERVED</span>
+        <span class="dev-highlight">DEVELOPED BY S. M. MAHMUD IQBAL</span>
+      </div>
+    </footer>
+  </div>
+
+  <!-- About / Spec Modal -->
+  <div id="aboutModal" class="modal-backdrop" style="display: none;">
+    <div class="modal-sheet">
+      <div class="modal-top">
+        <div class="modal-tag">SPECIFICATION & ATTRIBUTION</div>
+        <button class="close-trigger" id="closeModalBtn">✕</button>
+      </div>
+      <div class="modal-content">
+        <h3 class="modal-heading">SNAPFLOW // ENGINE</h3>
+        <div class="modal-dev-banner">
+          DEVELOPED BY S. M. MAHMUD IQBAL
+        </div>
+        <p class="modal-text">
+          A high-performance media harvesting platform crafted in accordance with Swiss Brutalism principles. Engineered with a decoupled Python (yt-dlp) microservice and a responsive client interface.
+        </p>
+
+        <div class="spec-table">
+          <div class="spec-row">
+            <span class="spec-key">DESIGN SPEC</span>
+            <span class="spec-val">Swiss Brutalism / Clash Display & Satoshi</span>
+          </div>
+          <div class="spec-row">
+            <span class="spec-key">BASE PALETTE</span>
+            <span class="spec-val">#E4E2DD (Base) • #1E1E1E (Ink) • #DB4A2B (Accent)</span>
+          </div>
+          <div class="spec-row">
+            <span class="spec-key">EXTRACTOR</span>
+            <span class="spec-val">yt-dlp Core (Zero Bloat / Zero Adware)</span>
+          </div>
+          <div class="spec-row">
+            <span class="spec-key">CREATOR</span>
+            <span class="spec-val">S. M. Mahmud Iqbal</span>
+          </div>
+        </div>
+      </div>
+      <div class="modal-actions">
+        <button class="brutalist-btn btn-primary" id="modalOkBtn">DISMISS</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
