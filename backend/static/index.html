@@ -50,8 +50,24 @@
         </p>
       </section>
 
-      <!-- Input Card -->
-      <section class="input-section">
+      <!-- Navigation Mode Tabs -->
+      <div class="mode-navigation-bar">
+        <button class="mode-tab-btn active" id="tabModeUrl" data-mode="url" type="button">
+          <span class="mode-tab-idx">01</span>
+          <span class="mode-tab-name">DIRECT URL</span>
+        </button>
+        <button class="mode-tab-btn" id="tabModeSearch" data-mode="search" type="button">
+          <span class="mode-tab-idx">02</span>
+          <span class="mode-tab-name">LIVE SEARCH</span>
+        </button>
+        <button class="mode-tab-btn" id="tabModeExplore" data-mode="explore" type="button">
+          <span class="mode-tab-idx">03</span>
+          <span class="mode-tab-name">WEB EXPLORER</span>
+        </button>
+      </div>
+
+      <!-- PANEL 01: DIRECT URL -->
+      <section id="panelUrl" class="panel-section active">
         <div class="brutalist-box input-box">
           <div class="box-header-strip">
             <span class="strip-label">TARGET RESOURCE URL</span>
@@ -76,6 +92,103 @@
           <span class="tag-item">FACEBOOK</span>
           <span class="tag-item">VIMEO</span>
           <span class="tag-item">REDDIT</span>
+        </div>
+      </section>
+
+      <!-- PANEL 02: LIVE SEARCH -->
+      <section id="panelSearch" class="panel-section" style="display: none;">
+        <div class="brutalist-box search-box">
+          <div class="box-header-strip">
+            <span class="strip-label">INTEGRATED IN-APP SEARCH</span>
+            <span class="strip-code">SEARCH_02</span>
+          </div>
+          <div class="input-interactive-row">
+            <input type="text" id="searchInput" placeholder="SEARCH ANY SONG, ARTIST, VIDEO OR TOPIC..." autocomplete="off">
+            <button class="brutalist-btn action-paste" id="searchExecBtn" type="button">
+              <span class="search-btn-label">⚡ SEARCH</span>
+              <span class="search-spinner" style="display: none;"></span>
+            </button>
+          </div>
+          <div class="trending-chips-row">
+            <span class="chips-label">QUICK TRENDS:</span>
+            <button class="chip-item" type="button" data-query="Lofi Hip Hop Radio">LOFI BEATS</button>
+            <button class="chip-item" type="button" data-query="Synthwave Mix">SYNTHWAVE</button>
+            <button class="chip-item" type="button" data-query="NoCopyrightSounds">NCS MUSIC</button>
+            <button class="chip-item" type="button" data-query="Tech News 2026">TECH</button>
+            <button class="chip-item" type="button" data-query="Top Podcasts">PODCASTS</button>
+          </div>
+        </div>
+
+        <!-- Search Results Grid -->
+        <div id="searchResultsSection" class="search-results-container" style="display: none;">
+          <div class="results-header-strip">
+            <span class="strip-label" id="resultsCountLabel">DISCOVERED MEDIA</span>
+            <span class="strip-code">1-CLICK EXTRACT</span>
+          </div>
+          <div id="searchResultsGrid" class="search-cards-grid">
+            <!-- Dynamically populated -->
+          </div>
+        </div>
+      </section>
+
+      <!-- PANEL 03: WEB EXPLORER -->
+      <section id="panelExplore" class="panel-section" style="display: none;">
+        <div class="brutalist-box explorer-box">
+          <div class="box-header-strip">
+            <span class="strip-label">IN-APP WEB EXPLORER // MEDIA SNIFFER</span>
+            <span class="strip-code">EXPLORER_03</span>
+          </div>
+          <p class="explorer-desc">
+            Browse media platforms with live streaming support. Pick a destination below or launch custom URL. Tap <strong>⚡ EXTRACT MEDIA</strong> to download from the current page.
+          </p>
+
+          <div class="explorer-address-row">
+            <input type="text" id="explorerUrlInput" placeholder="ENTER WEB ADDRESS (e.g. m.youtube.com, tiktok.com)..." value="https://m.youtube.com">
+            <button class="brutalist-btn btn-primary" id="openExplorerBtn" type="button">LAUNCH BROWSER</button>
+          </div>
+
+          <div class="platform-launchpad-grid">
+            <button class="launchpad-card" type="button" data-url="https://m.youtube.com">
+              <div class="launchpad-icon yt">▶</div>
+              <div class="launchpad-name">YOUTUBE</div>
+              <div class="launchpad-sub">m.youtube.com</div>
+            </button>
+            <button class="launchpad-card" type="button" data-url="https://www.tiktok.com">
+              <div class="launchpad-icon tt">♬</div>
+              <div class="launchpad-name">TIKTOK</div>
+              <div class="launchpad-sub">tiktok.com</div>
+            </button>
+            <button class="launchpad-card" type="button" data-url="https://www.instagram.com/reels/">
+              <div class="launchpad-icon ig">✦</div>
+              <div class="launchpad-name">INSTAGRAM</div>
+              <div class="launchpad-sub">instagram.com/reels</div>
+            </button>
+            <button class="launchpad-card" type="button" data-url="https://x.com">
+              <div class="launchpad-icon x">𝕏</div>
+              <div class="launchpad-name">TWITTER / X</div>
+              <div class="launchpad-sub">x.com</div>
+            </button>
+            <button class="launchpad-card" type="button" data-url="https://soundcloud.com">
+              <div class="launchpad-icon sc">☁</div>
+              <div class="launchpad-name">SOUNDCLOUD</div>
+              <div class="launchpad-sub">soundcloud.com</div>
+            </button>
+            <button class="launchpad-card" type="button" data-url="https://m.facebook.com/watch">
+              <div class="launchpad-icon fb">f</div>
+              <div class="launchpad-name">FACEBOOK</div>
+              <div class="launchpad-sub">facebook.com/watch</div>
+            </button>
+            <button class="launchpad-card" type="button" data-url="https://www.reddit.com/r/videos/">
+              <div class="launchpad-icon rd">●</div>
+              <div class="launchpad-name">REDDIT</div>
+              <div class="launchpad-sub">reddit.com/r/videos</div>
+            </button>
+            <button class="launchpad-card" type="button" data-url="https://m.twitch.tv">
+              <div class="launchpad-icon tw">👾</div>
+              <div class="launchpad-name">TWITCH</div>
+              <div class="launchpad-sub">m.twitch.tv</div>
+            </button>
+          </div>
         </div>
       </section>
 
@@ -189,6 +302,12 @@
       </div>
     </div>
   </div>
+
+  <!-- Floating Brutalist Media Sniffer Button -->
+  <button id="floatingSnifferBtn" class="floating-sniffer-btn" type="button" title="Sniff & Extract Media from Clipboard or Active Source">
+    <span class="sniffer-icon">⚡</span>
+    <span class="sniffer-label">SNIFF MEDIA</span>
+  </button>
 
   <script src="app.js"></script>
 </body>

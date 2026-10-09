@@ -970,3 +970,388 @@ html, body {
     text-align: left;
   }
 }
+
+/* ==========================================================================
+   NAVIGATION MODE SWITCHER & PANELS
+   Developed by S. M. Mahmud Iqbal
+   ========================================================================== */
+.mode-navigation-bar {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 24px;
+  width: 100%;
+}
+
+.mode-tab-btn {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 14px 16px;
+  background: var(--color-base);
+  border: var(--border-heavy);
+  box-shadow: var(--shadow-brutal);
+  cursor: pointer;
+  font-family: 'Clash Display', sans-serif;
+  font-weight: 700;
+  font-size: 0.95rem;
+  letter-spacing: -0.02em;
+  color: var(--color-primary);
+  transition: all 0.15s var(--ease-spring);
+}
+
+.mode-tab-btn:hover {
+  transform: translate(-2px, -2px);
+  box-shadow: var(--shadow-brutal-lg);
+  background: #FFFFFF;
+}
+
+.mode-tab-btn.active {
+  background: var(--color-primary);
+  color: #FFFFFF;
+  box-shadow: var(--shadow-brutal-hover);
+  transform: translate(2px, 2px);
+}
+
+.mode-tab-idx {
+  font-family: 'Satoshi', sans-serif;
+  font-size: 0.72rem;
+  font-weight: 900;
+  background: var(--color-accent-red);
+  color: #FFFFFF;
+  padding: 2px 6px;
+  border: 1px solid #1E1E1E;
+}
+
+.mode-tab-btn.active .mode-tab-idx {
+  background: var(--color-accent-orange);
+  color: #1E1E1E;
+}
+
+/* Trending Chips */
+.trending-chips-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  margin-top: 16px;
+}
+
+.chips-label {
+  font-family: 'Satoshi', sans-serif;
+  font-size: 0.75rem;
+  font-weight: 900;
+  letter-spacing: 0.05em;
+  color: var(--color-primary);
+}
+
+.chip-item {
+  background: #FFFFFF;
+  border: 2px solid var(--color-primary);
+  padding: 6px 12px;
+  font-family: 'Satoshi', sans-serif;
+  font-size: 0.75rem;
+  font-weight: 800;
+  color: var(--color-primary);
+  cursor: pointer;
+  box-shadow: 2px 2px 0px var(--color-primary);
+  transition: all 0.12s var(--ease-spring);
+}
+
+.chip-item:hover {
+  background: var(--color-accent-orange);
+  color: #1E1E1E;
+  transform: translate(-1px, -1px);
+  box-shadow: 3px 3px 0px var(--color-primary);
+}
+
+/* Search Results Grid */
+.search-results-container {
+  margin-top: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.results-header-strip {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: var(--color-primary);
+  color: #FFFFFF;
+  padding: 10px 16px;
+  font-family: 'Satoshi', sans-serif;
+  font-weight: 800;
+  font-size: 0.8rem;
+  letter-spacing: 0.08em;
+  border: var(--border-heavy);
+}
+
+.search-cards-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 20px;
+}
+
+.search-card {
+  background: #FFFFFF;
+  border: var(--border-heavy);
+  box-shadow: var(--shadow-brutal);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  transition: all 0.15s var(--ease-spring);
+}
+
+.search-card:hover {
+  transform: translate(-2px, -2px);
+  box-shadow: var(--shadow-brutal-lg);
+}
+
+.search-card-thumb-wrap {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  background: #1E1E1E;
+  overflow: hidden;
+  border-bottom: 2px solid var(--color-primary);
+}
+
+.search-card-thumb {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.3s ease;
+}
+
+.search-card:hover .search-card-thumb {
+  transform: scale(1.04);
+}
+
+.search-card-duration {
+  position: absolute;
+  bottom: 8px;
+  right: 8px;
+  background: var(--color-primary);
+  color: #FFFFFF;
+  font-family: 'Satoshi', monospace;
+  font-size: 0.72rem;
+  font-weight: 800;
+  padding: 2px 6px;
+  border: 1px solid #FFFFFF;
+}
+
+.search-card-body {
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.search-card-title {
+  font-family: 'Clash Display', sans-serif;
+  font-size: 1.05rem;
+  font-weight: 700;
+  line-height: 1.25;
+  letter-spacing: -0.02em;
+  color: var(--color-primary);
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.search-card-meta {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.78rem;
+  color: #666666;
+  font-weight: 700;
+}
+
+.search-card-uploader {
+  color: var(--color-primary);
+  max-width: 65%;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.search-card-extract-btn {
+  width: 100%;
+  padding: 10px 14px;
+  background: var(--color-accent-red);
+  color: #FFFFFF;
+  border: 2px solid var(--color-primary);
+  font-family: 'Clash Display', sans-serif;
+  font-weight: 700;
+  font-size: 0.88rem;
+  letter-spacing: 0.02em;
+  cursor: pointer;
+  box-shadow: 2px 2px 0px var(--color-primary);
+  transition: all 0.12s var(--ease-spring);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.search-card-extract-btn:hover {
+  background: var(--color-primary);
+  transform: translate(-1px, -1px);
+  box-shadow: 3px 3px 0px var(--color-primary);
+}
+
+/* Platform Launchpad (Web Explorer) */
+.explorer-desc {
+  font-size: 0.95rem;
+  line-height: 1.5;
+  color: var(--color-primary);
+  margin-bottom: 16px;
+}
+
+.explorer-address-row {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 24px;
+}
+
+.explorer-address-row input {
+  flex: 1;
+  padding: 14px 18px;
+  background: #FFFFFF;
+  border: var(--border-heavy);
+  font-family: 'Satoshi', sans-serif;
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--color-primary);
+  box-shadow: var(--shadow-brutal);
+  outline: none;
+}
+
+.platform-launchpad-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(170px, 1fr));
+  gap: 16px;
+}
+
+.launchpad-card {
+  background: #FFFFFF;
+  border: var(--border-heavy);
+  box-shadow: var(--shadow-brutal);
+  padding: 20px 14px;
+  text-align: center;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  transition: all 0.15s var(--ease-spring);
+}
+
+.launchpad-card:hover {
+  transform: translate(-3px, -3px);
+  box-shadow: var(--shadow-brutal-lg);
+  background: var(--color-base);
+}
+
+.launchpad-icon {
+  width: 44px;
+  height: 44px;
+  border: 2px solid var(--color-primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.3rem;
+  font-weight: 900;
+  background: var(--color-primary);
+  color: #FFFFFF;
+  box-shadow: 2px 2px 0px var(--color-primary);
+}
+
+.launchpad-icon.yt { background: #FF0000; color: #FFFFFF; }
+.launchpad-icon.tt { background: #000000; color: #00F2FE; }
+.launchpad-icon.ig { background: #E1306C; color: #FFFFFF; }
+.launchpad-icon.x  { background: #000000; color: #FFFFFF; }
+.launchpad-icon.sc { background: #FF5500; color: #FFFFFF; }
+.launchpad-icon.fb { background: #1877F2; color: #FFFFFF; }
+.launchpad-icon.rd { background: #FF4500; color: #FFFFFF; }
+.launchpad-icon.tw { background: #9146FF; color: #FFFFFF; }
+
+.launchpad-name {
+  font-family: 'Clash Display', sans-serif;
+  font-size: 1rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: var(--color-primary);
+}
+
+.launchpad-sub {
+  font-family: 'Satoshi', sans-serif;
+  font-size: 0.72rem;
+  color: #777777;
+  font-weight: 600;
+}
+
+/* Floating Sniffer Action Button */
+.floating-sniffer-btn {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  background: var(--color-accent-red);
+  color: #FFFFFF;
+  border: 3px solid var(--color-primary);
+  box-shadow: var(--shadow-brutal-lg);
+  padding: 14px 20px;
+  font-family: 'Clash Display', sans-serif;
+  font-size: 0.95rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+  z-index: 99;
+  transition: all 0.15s var(--ease-spring);
+  animation: pulse-border 2.5s infinite;
+}
+
+.floating-sniffer-btn:hover {
+  transform: translate(-3px, -3px) scale(1.03);
+  box-shadow: 8px 8px 0px var(--color-primary);
+  background: var(--color-primary);
+}
+
+@keyframes pulse-border {
+  0%, 100% { box-shadow: 5px 5px 0px #1E1E1E; }
+  50% { box-shadow: 7px 7px 0px #DB4A2B; }
+}
+
+.search-spinner {
+  width: 16px;
+  height: 16px;
+  border: 2px solid #FFFFFF;
+  border-top-color: transparent;
+  border-radius: 50%;
+  animation: spin 0.6s linear infinite;
+}
+
+@media (max-width: 600px) {
+  .mode-navigation-bar {
+    flex-direction: column;
+    gap: 8px;
+  }
+  .explorer-address-row {
+    flex-direction: column;
+  }
+  .floating-sniffer-btn {
+    bottom: 16px;
+    right: 16px;
+    padding: 12px 16px;
+    font-size: 0.85rem;
+  }
+}

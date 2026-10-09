@@ -17,8 +17,10 @@ from starlette.middleware.base import BaseHTTPMiddleware
 
 try:
     from .downloader import extract_info, download_media_file, get_stream_url
+    from .search import perform_search
 except ImportError:
     from downloader import extract_info, download_media_file, get_stream_url
+    from search import perform_search
 
 logger = logging.getLogger("snapflow.api")
 
@@ -54,6 +56,11 @@ app.add_middleware(
 
 class ExtractRequest(BaseModel):
     url: str
+
+
+class SearchRequest(BaseModel):
+    query: str
+    limit: int = 12
 
 
 @app.get("/")
@@ -92,6 +99,37 @@ def api_extract(request: ExtractRequest):
     except Exception as e:
         logger.error(f"Extract error: {e}")
         raise HTTPException(status_code=422, detail=f"Failed to extract media: {str(e)}")
+
+
+@app.get("/search")
+@app.get("/api/search")
+def api_search(q: str = Query(..., description="Search keyword query")):
+    """Live search for videos/audio across YouTube and platforms without pasting URL."""
+    if not q or not q.strip():
+        raise HTTPException(status_code=400, detail="Query keyword cannot be empty.")
+    items = perform_search(q)
+    return JSONResponse(content={
+        "query": q,
+        "results": items,
+        "total": len(items),
+        "author": "Developed by S. M. Mahmud Iqbal"
+    })
+
+
+@app.post("/search")
+@app.post("/api/search")
+def api_search_post(request: SearchRequest):
+    """POST endpoint for live search."""
+    q = request.query.strip()
+    if not q:
+        raise HTTPException(status_code=400, detail="Query keyword cannot be empty.")
+    items = perform_search(q, limit=request.limit or 12)
+    return JSONResponse(content={
+        "query": q,
+        "results": items,
+        "total": len(items),
+        "author": "Developed by S. M. Mahmud Iqbal"
+    })
 
 
 @app.get("/download")
