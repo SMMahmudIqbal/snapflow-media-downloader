@@ -1,4 +1,4 @@
-# SnapFlow — Swiss Brutalist Multi-Platform Media Engine
+# SnapFlow • Swiss Brutalist Multi-Platform Media Engine
 
 > **Developed by S. M. Mahmud Iqbal**  
 > **Production Web App:** [snapflow-media-downloader.vercel.app](https://snapflow-media-downloader.vercel.app)  
@@ -26,7 +26,7 @@ SnapFlow is an open-source, ultra-fast media extraction and downloader suite ins
 
 2. **Android System "Share to SnapFlow" Integration**:
    - Registered `android.intent.action.SEND` intent filter.
-   - Tap "Share" on any video in YouTube, TikTok, Instagram, Twitter/X, or your web browser and pick SnapFlow—the app immediately launches and triggers stream extraction.
+   - Tap "Share" on any video in YouTube, TikTok, Instagram, Twitter/X, or your web browser and pick SnapFlow • the app immediately launches and triggers stream extraction.
 
 3. **In-App Web Explorer and Floating Stream Sniffer**:
    - Direct launchpad tiles for YouTube, TikTok, Instagram Reels, Twitter/X, SoundCloud, Facebook Watch, Reddit, and Twitch.
