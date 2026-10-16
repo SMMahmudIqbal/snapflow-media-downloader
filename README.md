@@ -4,8 +4,6 @@
 > **Production Web App:** [snapflow-media-downloader.vercel.app](https://snapflow-media-downloader.vercel.app)  
 > **Latest Android APK Release:** [Download v1.2.0 APK (12.5 MB)](https://github.com/SMMahmudIqbal/snapflow-media-downloader/releases/download/v1.2.0/SnapFlow_v1.2.0.apk)
 
-![SnapFlow demo](demo.gif)
-
 [![Live Web App](https://img.shields.io/badge/Live%20Engine-snapflow--media--downloader.vercel.app-DB4A2B?style=flat-square)](https://snapflow-media-downloader.vercel.app)
 [![Android APK](https://img.shields.io/badge/Android%20APK-v1.2.0%20(12.5%20MB)-1E1E1E?style=flat-square&logo=android)](https://github.com/SMMahmudIqbal/snapflow-media-downloader/releases/download/v1.2.0/SnapFlow_v1.2.0.apk)
 [![Author](https://img.shields.io/badge/Developed%20By-S.%20M.%20Mahmud%20Iqbal-6366f1?style=flat-square)](https://github.com/SMMahmudIqbal)
