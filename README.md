@@ -110,8 +110,10 @@ cd snapflow-media-downloader
 
 # Activate Python environment & run backend
 .\backend\.venv\Scripts\Activate.ps1
-python -m uvicorn backend.main:app --host 0.0.0.0 --port 8000 --reload
+python -m uvicorn backend.main:app --host 127.0.0.1 --port 8000 --reload
 ```
+
+The local API binds to loopback. Extraction accepts HTTPS URLs only from the media platforms documented above and rejects URLs whose DNS resolves to private or non-public addresses. The extractor also relies on its upstream media hosts; production deployments should apply outbound network egress controls as an additional SSRF defense.
 
 ---
 
