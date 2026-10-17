@@ -16,10 +16,10 @@ from pydantic import BaseModel
 from starlette.middleware.base import BaseHTTPMiddleware
 
 try:
-    from .downloader import extract_info, download_media_file, get_stream_url
+    from .downloader import UnsafeSourceURL, extract_info, download_media_file, get_stream_url
     from .search import perform_search
 except ImportError:
-    from downloader import extract_info, download_media_file, get_stream_url
+    from downloader import UnsafeSourceURL, extract_info, download_media_file, get_stream_url
     from search import perform_search
 
 logger = logging.getLogger("snapflow.api")
@@ -96,6 +96,10 @@ def api_extract(request: ExtractRequest):
     try:
         data = extract_info(url)
         return JSONResponse(content=data)
+    except UnsafeSourceURL as e:
+        raise HTTPException(status_code=400, detail=str(e))
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Extract error: {e}")
         raise HTTPException(status_code=422, detail=f"Failed to extract media: {str(e)}")
@@ -170,6 +174,10 @@ def api_download(
             )
         
         raise HTTPException(status_code=404, detail="Media stream could not be found.")
+    except UnsafeSourceURL as e:
+        raise HTTPException(status_code=400, detail=str(e))
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Download error: {e}")
         raise HTTPException(status_code=500, detail=f"Download failed: {str(e)}")
@@ -183,4 +191,4 @@ if os.path.exists(static_dir):
 
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run("main:app", host="0.0.0.0", port=8000, reload=True)
+    uvicorn.run("main:app", host="127.0.0.1", port=8000, reload=True)

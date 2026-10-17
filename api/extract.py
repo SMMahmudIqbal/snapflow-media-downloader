@@ -9,9 +9,9 @@ from fastapi.responses import JSONResponse
 from pydantic import BaseModel
 
 try:
-    from .downloader import extract_info
+    from .downloader import UnsafeSourceURL, extract_info
 except ImportError:
-    from downloader import extract_info
+    from downloader import UnsafeSourceURL, extract_info
 
 logger = logging.getLogger("snapflow.extract")
 
@@ -36,6 +36,10 @@ def extract_endpoint(request: ExtractRequest):
     try:
         data = extract_info(url)
         return JSONResponse(content=data)
+    except UnsafeSourceURL as e:
+        raise HTTPException(status_code=400, detail=str(e))
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Extract error: {e}")
         raise HTTPException(status_code=422, detail=f"Failed to extract media: {str(e)}")

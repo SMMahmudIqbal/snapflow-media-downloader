@@ -126,7 +126,6 @@ def search_ytdlp_fallback(query: str, limit: int = 8) -> List[Dict[str, Any]]:
         'quiet': True,
         'extract_flat': True,
         'skip_download': True,
-        'nocheckcertificate': True,
         'noplaylist': True,
     }
     with yt_dlp.YoutubeDL(ydl_opts) as ydl:

@@ -7,15 +7,63 @@ Description: Core extraction and stream handler powered by yt-dlp.
 import os
 import re
 import json
+import ipaddress
+import socket
 import urllib.request
 import tempfile
 import logging
+from urllib.parse import urlsplit
 from typing import Dict, Any, List, Optional
 import yt_dlp
 
 logger = logging.getLogger("snapflow.downloader")
 DOWNLOAD_DIR = os.path.join(tempfile.gettempdir(), "snapflow_downloads")
 os.makedirs(DOWNLOAD_DIR, exist_ok=True)
+
+SUPPORTED_MEDIA_HOSTS = (
+    "youtube.com", "youtu.be", "youtube-nocookie.com", "tiktok.com", "instagram.com",
+    "twitter.com", "x.com", "t.co", "soundcloud.com", "snd.sc", "facebook.com",
+    "fb.watch", "vimeo.com", "reddit.com", "redd.it", "v.redd.it", "pinterest.com",
+    "pin.it", "twitch.tv",
+)
+
+
+class UnsafeSourceURL(ValueError):
+    """Raised when a caller-supplied media URL is outside the safe source policy."""
+
+
+def validate_source_url(url: str) -> str:
+    """Accept only documented media sites over HTTP(S) with globally routable DNS."""
+    value = (url or "").strip()
+    if not value or len(value) > 2048:
+        raise UnsafeSourceURL("A valid media URL is required.")
+    try:
+        parts = urlsplit(value)
+        port = parts.port
+    except ValueError as exc:
+        raise UnsafeSourceURL("The media URL is malformed.") from exc
+    if parts.scheme.lower() != "https" or not parts.hostname:
+        raise UnsafeSourceURL("Only HTTPS media URLs are supported.")
+    if parts.username is not None or parts.password is not None:
+        raise UnsafeSourceURL("URLs containing credentials are not accepted.")
+    if port is not None and port != 443:
+        raise UnsafeSourceURL("Non-standard destination ports are not accepted.")
+
+    hostname = parts.hostname.rstrip(".").lower()
+    if not any(hostname == domain or hostname.endswith("." + domain) for domain in SUPPORTED_MEDIA_HOSTS):
+        raise UnsafeSourceURL("This media host is not supported.")
+
+    try:
+        resolved = [ipaddress.ip_address(hostname)]
+    except ValueError:
+        try:
+            records = socket.getaddrinfo(hostname, None, type=socket.SOCK_STREAM)
+            resolved = [ipaddress.ip_address(record[4][0]) for record in records]
+        except (OSError, ValueError) as exc:
+            raise UnsafeSourceURL("The media host could not be resolved safely.") from exc
+    if not resolved or any(not address.is_global for address in resolved):
+        raise UnsafeSourceURL("Private or non-public network destinations are not allowed.")
+    return value
 
 
 def format_bytes(size: Optional[int]) -> str:
@@ -153,6 +201,7 @@ def extract_youtube_fallback(url: str, video_id: str) -> Optional[Dict[str, Any]
 
 def extract_info(url: str) -> Dict[str, Any]:
     """Extract media metadata and categorized quality formats from any supported URL."""
+    url = validate_source_url(url)
     ydl_opts = {
         'quiet': True,
         'no_warnings': True,
@@ -160,7 +209,6 @@ def extract_info(url: str) -> Dict[str, Any]:
         'extract_flat': False,
         'ignoreerrors': False,
         'noplaylist': True,
-        'nocheckcertificate': True,
         'extractor_args': {'youtube': {'player_client': ['visionos', 'android']}},
     }
 
@@ -272,6 +320,7 @@ def extract_info(url: str) -> Dict[str, Any]:
 
 def get_stream_url(url: str, format_id: str, is_audio: bool = False) -> Dict[str, Any]:
     """Retrieve direct stream URL and title for redirect without heavy server downloads."""
+    url = validate_source_url(url)
     yt_id = extract_youtube_id(url)
     if str(format_id).startswith("yt_"):
         vid = yt_id or "video"
@@ -287,7 +336,6 @@ def get_stream_url(url: str, format_id: str, is_audio: bool = False) -> Dict[str
         'quiet': True,
         'no_warnings': True,
         'skip_download': True,
-        'nocheckcertificate': True,
         'noplaylist': True,
         'extractor_args': {'youtube': {'player_client': ['visionos', 'android']}},
     }
@@ -343,6 +391,7 @@ def get_stream_url(url: str, format_id: str, is_audio: bool = False) -> Dict[str
 
 def download_media_file(url: str, format_id: str, is_audio: bool = False) -> str:
     """Download requested media file locally to temp cache and return absolute filepath."""
+    url = validate_source_url(url)
     sanitized_id = re.sub(r'[^a-zA-Z0-9_-]', '_', format_id)
     out_tmpl = os.path.join(DOWNLOAD_DIR, f"%(id)s_{sanitized_id}.%(ext)s")
 
@@ -352,7 +401,6 @@ def download_media_file(url: str, format_id: str, is_audio: bool = False) -> str
             'outtmpl': out_tmpl,
             'quiet': True,
             'no_warnings': True,
-            'nocheckcertificate': True,
             'postprocessors': [{
                 'key': 'FFmpegExtractAudio',
                 'preferredcodec': 'mp3',
@@ -366,7 +414,6 @@ def download_media_file(url: str, format_id: str, is_audio: bool = False) -> str
             'outtmpl': out_tmpl,
             'quiet': True,
             'no_warnings': True,
-            'nocheckcertificate': True,
         }
 
     with yt_dlp.YoutubeDL(ydl_opts) as ydl:
