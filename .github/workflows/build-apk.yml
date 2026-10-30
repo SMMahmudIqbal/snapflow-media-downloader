@@ -37,7 +37,7 @@ jobs:
           ./gradlew assembleRelease --no-daemon
 
       - name: Upload APK Artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: snapflow-release-apk
           path: android_app/app/build/outputs/apk/release/*.apk
