@@ -10,9 +10,9 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import RedirectResponse, FileResponse
 
 try:
-    from .downloader import get_stream_url, download_media_file
+    from .downloader import UnsafeSourceURL, get_stream_url, download_media_file
 except ImportError:
-    from downloader import get_stream_url, download_media_file
+    from downloader import UnsafeSourceURL, get_stream_url, download_media_file
 
 logger = logging.getLogger("snapflow.download")
 
@@ -62,6 +62,10 @@ def download_endpoint(
             )
 
         raise HTTPException(status_code=404, detail="Media stream could not be resolved.")
+    except UnsafeSourceURL as e:
+        raise HTTPException(status_code=400, detail=str(e))
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Download error: {e}")
         raise HTTPException(status_code=500, detail=f"Download failed: {str(e)}")
